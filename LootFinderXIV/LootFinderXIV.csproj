@@ -9,6 +9,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Logo affiché par Dalamud pour le plugin installé -->
+    <Content Include="..\images\icon.png" Link="images\icon.png" CopyToOutputDirectory="PreserveNewest" Visible="false" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- Tables de loot des donjons (coffres de boss, coffres au trésor...), GPL-3.0 -->
     <PackageReference Include="LuminaSupplemental.Excel" Version="5.1.5" />
     <!-- Interface native (fenêtres au style du jeu), MIT, sous-module figé sur le commit 6b7b191. -->

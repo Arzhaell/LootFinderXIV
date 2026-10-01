@@ -137,14 +137,14 @@ public sealed class LootDatabase
                 ClearGil = instance?.InstanceClearGil ?? 0,
             };
 
-            // Où trouver chaque objet rare (coffre + chance, boss...).
-            var rareSources = new Dictionary<uint, List<RareSource>>();
-            void NoteRare(LootItem item, RareSource source)
+            // Où trouver chaque objet rare ou carte (coffre + chance, boss...).
+            var featuredSources = new Dictionary<uint, List<LootSource>>();
+            void NoteFeatured(LootItem item, LootSource source)
             {
-                if (!item.IsRare)
+                if (!item.HasOwnSection)
                     return;
-                if (!rareSources.TryGetValue(item.ItemId, out var list))
-                    rareSources[item.ItemId] = list = [];
+                if (!featuredSources.TryGetValue(item.ItemId, out var list))
+                    featuredSources[item.ItemId] = list = [];
                 if (!list.Contains(source))
                     list.Add(source);
             }
@@ -189,7 +189,7 @@ public sealed class LootDatabase
                         if (GetItem(itemId) is not { } item)
                             continue;
                         var chance = chances.GetValueOrDefault(itemId);
-                        NoteRare(item, new RareSource(RareSourceKind.Chest, lootChest, null, chance));
+                        NoteFeatured(item, new LootSource(LootSourceKind.Chest, lootChest, null, chance));
                         lootChest.Entries.Add(new LootEntry(item, chance));
                     }
                     AddChest(duty, lootChest);
@@ -218,7 +218,7 @@ public sealed class LootDatabase
                 {
                     if (GetItem(itemId) is not { } item)
                         continue;
-                    NoteRare(item, new RareSource(RareSourceKind.Chest, lootChest, null, chance));
+                    NoteFeatured(item, new LootSource(LootSourceKind.Chest, lootChest, null, chance));
                     lootChest.Entries.Add(new LootEntry(item, chance));
                 }
                 AddChest(duty, lootChest);
@@ -230,31 +230,37 @@ public sealed class LootDatabase
             {
                 if (GetItem(drop.ItemId) is not { } item || other.Entries.Any(e => e.Item.ItemId == item.ItemId))
                     continue;
-                NoteRare(item, new RareSource(RareSourceKind.BossDrop, null, Boss(drop.FightNo), null));
+                NoteFeatured(item, new LootSource(LootSourceKind.BossDrop, null, Boss(drop.FightNo), null));
                 other.Entries.Add(new LootEntry(item, null));
             }
             foreach (var drop in dutyDropsByDuty[cfcId])
             {
                 if (GetItem(drop.ItemId) is not { } item || other.Entries.Any(e => e.Item.ItemId == item.ItemId))
                     continue;
-                NoteRare(item, new RareSource(RareSourceKind.DutyDrop, null, null, null));
+                NoteFeatured(item, new LootSource(LootSourceKind.DutyDrop, null, null, null));
                 other.Entries.Add(new LootEntry(item, null));
             }
             AddChest(duty, other);
 
-            if (duty.Chests.Count == 0 && rareSources.Count == 0)
+            if (duty.Chests.Count == 0 && featuredSources.Count == 0)
                 continue;
 
-            foreach (var (itemId, sources) in rareSources)
-                duty.RareItems.Add(new RareLoot(items[itemId], sources));
-            duty.RareItems.Sort((a, b) => a.Item.Category != b.Item.Category
+            foreach (var (itemId, sources) in featuredSources)
+            {
+                var featured = new FeaturedLoot(items[itemId], sources);
+                (featured.Item.IsRare ? duty.RareItems : duty.TripleTriadCards).Add(featured);
+            }
+            Comparison<FeaturedLoot> byCategoryThenName = (a, b) => a.Item.Category != b.Item.Category
                 ? a.Item.Category.CompareTo(b.Item.Category)
-                : string.Compare(a.Item.Name, b.Item.Name, StringComparison.CurrentCulture));
+                : string.Compare(a.Item.Name, b.Item.Name, StringComparison.CurrentCulture);
+            duty.RareItems.Sort(byCategoryThenName);
+            duty.TripleTriadCards.Sort(byCategoryThenName);
 
             if (instance is { } content)
                 AddTomestones(duty, content, tomestones, bossesByDuty[cfcId].Select(b => b.FightNo).DefaultIfEmpty().Max(), Boss);
 
             duty.Items.AddRange(duty.RareItems.Select(r => r.Item)
+                .Concat(duty.TripleTriadCards.Select(c => c.Item))
                 .Concat(duty.Chests.SelectMany(c => c.Entries).Select(e => e.Item))
                 .DistinctBy(i => i.ItemId));
             duties.Add(duty);
@@ -273,10 +279,10 @@ public sealed class LootDatabase
         return new LootDatabase(duties, items, cabinetIds);
     }
 
-    /// <summary>Ajoute un coffre sans ses objets rares (ils ont leur propre section) ; ignoré s'il devient vide.</summary>
+    /// <summary>Ajoute un coffre sans ses rares ni ses cartes (ils ont leur propre section) ; ignoré s'il devient vide.</summary>
     private static void AddChest(DutySheet duty, LootChest chest)
     {
-        chest.Entries.RemoveAll(e => e.Item.IsRare);
+        chest.Entries.RemoveAll(e => e.Item.HasOwnSection);
         chest.Entries.Sort((a, b) =>
         {
             var c = b.Item.ItemLevel.CompareTo(a.Item.ItemLevel);

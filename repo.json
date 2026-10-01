@@ -10,6 +10,7 @@
     "Changelog": "1.1.0: new \"All duties\" window listing every duty with its rare rewards obtained (x/x).",
     "ApplicableVersion": "any",
     "RepoUrl": "https://github.com/Arzhaell/LootFinderXIV",
+    "IconUrl": "https://raw.githubusercontent.com/Arzhaell/LootFinderXIV/main/images/icon.png",
     "Tags": [ "loot", "dungeon", "duty", "minion", "mount", "orchestrion", "tomestone", "collection" ],
     "DalamudApiLevel": 15,
     "LoadPriority": 0,

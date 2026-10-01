@@ -44,6 +44,8 @@ public static class Strings
     public static string WhereToGet => T("Où l'obtenir :", "Where to get it:");
 
     public static string RewardsSection => T("Mémoquartz et gils", "Tomestones and gil");
+    public static string CardSection(int obtained, int total) => F("Cartes Triple Triad : {0}/{1}", "Triple Triad cards: {0}/{1}", obtained, total);
+    public static string AllCardsObtained => T("Toutes les cartes sont obtenues.", "All cards are obtained.");
     public static string ClearGil => T("Gils en fin de mission", "Gil on completion");
     public static string NewPlayerBonus(uint amount) => F("Bonus si un joueur découvre la mission : +{0}", "Bonus when a player is new to the duty: +{0}", amount);
     public static string Amount(uint amount) => string.Format(Culture, "×{0:N0}", amount);
@@ -81,11 +83,11 @@ public static class Strings
         _ => T("Autres objets", "Other items"),
     };
 
-    public static string Source(RareSource source) => source.Kind switch
+    public static string Source(LootSource source) => source.Kind switch
     {
-        RareSourceKind.Chest when source.Probability is { } p => $"{ChestTitle(source.Chest!)} ({Percent(p)})",
-        RareSourceKind.Chest => ChestTitle(source.Chest!),
-        RareSourceKind.BossDrop => F("Lâché par {0}", "Dropped by {0}", BossName(source.Boss!.Value)),
+        LootSourceKind.Chest when source.Probability is { } p => $"{ChestTitle(source.Chest!)} ({Percent(p)})",
+        LootSourceKind.Chest => ChestTitle(source.Chest!),
+        LootSourceKind.BossDrop => F("Lâché par {0}", "Dropped by {0}", BossName(source.Boss!.Value)),
         _ => T("Dans la mission", "In the duty"),
     };
 

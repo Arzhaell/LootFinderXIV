@@ -32,6 +32,11 @@ public sealed class LootItem
 
     /// <summary>Mascotte, monture ou rouleau d'orchestrion.</summary>
     public bool IsRare => Category is LootCategory.Minion or LootCategory.Mount or LootCategory.Orchestrion;
+
+    public bool IsTripleTriadCard => Category == LootCategory.TripleTriadCard;
+
+    /// <summary>Présenté dans sa propre section de la fiche (rares, cartes) plutôt que dans les coffres.</summary>
+    public bool HasOwnSection => IsRare || IsTripleTriadCard;
 }
 
 /// <summary>Un objet dans un coffre, avec sa chance d'apparition (en %) quand elle est connue.</summary>
@@ -71,18 +76,18 @@ public sealed class LootChest
     public List<LootEntry> Entries { get; } = [];
 }
 
-public enum RareSourceKind
+public enum LootSourceKind
 {
     Chest,
     BossDrop,
     DutyDrop,
 }
 
-/// <summary>Où un objet rare peut s'obtenir : un coffre (avec sa chance), un boss, ou ailleurs dans la mission.</summary>
-public sealed record RareSource(RareSourceKind Kind, LootChest? Chest, BossRef? Boss, decimal? Probability);
+/// <summary>Où un objet peut s'obtenir : un coffre (avec sa chance), un boss, ou ailleurs dans la mission.</summary>
+public sealed record LootSource(LootSourceKind Kind, LootChest? Chest, BossRef? Boss, decimal? Probability);
 
-/// <summary>Un objet rare et les endroits où l'obtenir.</summary>
-public sealed record RareLoot(LootItem Item, IReadOnlyList<RareSource> Sources);
+/// <summary>Un objet présenté dans sa propre section (rare ou carte) et les endroits où l'obtenir.</summary>
+public sealed record FeaturedLoot(LootItem Item, IReadOnlyList<LootSource> Sources);
 
 /// <summary>Mémoquartz d'un type donné rapportés par la mission.</summary>
 public sealed class TomestoneReward
@@ -123,7 +128,10 @@ public sealed class DutySheet
     public List<LootChest> Chests { get; } = [];
 
     /// <summary>Mascottes, montures et orchestrion, avec leurs sources.</summary>
-    public List<RareLoot> RareItems { get; } = [];
+    public List<FeaturedLoot> RareItems { get; } = [];
+
+    /// <summary>Cartes Triple Triad, avec leurs sources.</summary>
+    public List<FeaturedLoot> TripleTriadCards { get; } = [];
 
     public List<TomestoneReward> Tomestones { get; } = [];
     public uint ClearGil { get; init; }

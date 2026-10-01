@@ -1,14 +1,17 @@
 # LootFinderXIV
 
+<img src="images/icon.png" alt="LootFinderXIV" width="128" align="right">
+
 *[English](README.md) · Français*
 
 Plugin Dalamud pour FINAL FANTASY XIV qui affiche, pour chaque mission, une **fiche façon base de données** :
 
 1. **Récompenses rares** (mascottes, montures, rouleaux d'orchestrion) : obtenues ou non, et où les trouver.
 2. **Mémoquartz et gils** : quantité par boss, total, bonus quand un joueur découvre la mission.
-3. **Un bloc par coffre** : chaque coffre de boss, puis chaque coffre au trésor (avec ses coordonnées sur la
+3. **Cartes Triple Triad** : obtenues ou non, et quel boss les lâche.
+4. **Un bloc par coffre** : chaque coffre de boss, puis chaque coffre au trésor (avec ses coordonnées sur la
    carte), avec l'équipement qu'il contient, sa chance d'apparition ou son niveau d'objet, et son statut.
-4. **Autres objets** : cartes Triple Triad et objets lâchés directement.
+5. **Autres objets** : objets lâchés directement par les boss ou trouvés dans la mission.
 
 La fiche est une fenêtre native, au style du jeu (bibliothèque [KamiToolKit](https://github.com/MidoriKami/KamiToolKit)).
 

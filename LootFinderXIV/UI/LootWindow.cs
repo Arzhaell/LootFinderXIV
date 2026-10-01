@@ -178,6 +178,8 @@ public sealed class LootWindow : NativeAddon
         list.AddNode(BuildRareSection(duty));
         if (BuildRewardSection(duty) is { } rewards)
             list.AddNode(rewards);
+        if (BuildCardSection(duty) is { } cards)
+            list.AddNode(cards);
         foreach (var chest in duty.Chests)
         {
             if (BuildChestSection(chest) is { } section)
@@ -276,6 +278,31 @@ public sealed class LootWindow : NativeAddon
                 StatusColor = LootRowNode.DefaultTextColor,
             });
         }
+        return section;
+    }
+
+    private CollapsingHeaderNode? BuildCardSection(DutySheet duty)
+    {
+        if (duty.TripleTriadCards.Count == 0)
+            return null;
+
+        var states = duty.TripleTriadCards.Select(c => (Card: c, State: Ownership.GetState(c.Item))).ToList();
+        var obtained = states.Count(s => s.State.Obtained);
+        var section = CreateSection("cards", Strings.CardSection(obtained, states.Count));
+
+        var shown = 0;
+        foreach (var (card, state) in states)
+        {
+            if (Config.HideObtained && state.Obtained)
+                continue;
+            var row = CreateItemRow(card.Item, state, string.Empty);
+            row.TextTooltip = Strings.WhereToGet + "\n" + string.Join("\n", card.Sources.Select(Strings.Source));
+            section.AddNode(row);
+            shown++;
+        }
+
+        if (shown == 0)
+            section.AddNode(CreateNoteRow(Strings.AllCardsObtained));
         return section;
     }
 

@@ -1,14 +1,17 @@
 # LootFinderXIV
 
+<img src="images/icon.png" alt="LootFinderXIV" width="128" align="right">
+
 *English · [Français](README.fr.md)*
 
 Dalamud plugin for FINAL FANTASY XIV that shows, for each duty, a **database-style loot sheet**:
 
 1. **Rare rewards** (minions, mounts, orchestrion rolls): obtained or not, and where to find them.
 2. **Tomestones and gil**: amount per boss, total, and the bonus when a player is new to the duty.
-3. **One block per coffer**: each boss coffer, then each treasure coffer (with its map coordinates), with the
+3. **Triple Triad cards**: obtained or not, and which boss drops them.
+4. **One block per coffer**: each boss coffer, then each treasure coffer (with its map coordinates), with the
    equipment it contains, its drop chance or item level, and its status.
-4. **Other items**: Triple Triad cards and items dropped directly.
+5. **Other items**: items dropped directly by bosses or found in the duty.
 
 The sheet is a native, game-styled window (library [KamiToolKit](https://github.com/MidoriKami/KamiToolKit)).
 
