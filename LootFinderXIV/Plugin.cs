@@ -123,12 +123,17 @@ public sealed class Plugin : IAsyncDalamudPlugin
             ownership?.Dispose();
         });
 
-        if (lootWindow != null)
-            await lootWindow.DisposeAsync();
-        if (overviewWindow != null)
-            await overviewWindow.DisposeAsync();
+        // La suite de l'await ci-dessus reprend sur le thread du jeu, or KamiToolKit interdit de fermer
+        // ses fenêtres depuis ce thread (« On main thread! ») : on passe explicitement sur le pool de threads.
+        await Task.Run(async () =>
+        {
+            if (lootWindow != null)
+                await lootWindow.DisposeAsync();
+            if (overviewWindow != null)
+                await overviewWindow.DisposeAsync();
 
-        await KamiToolKitLibrary.DisposeAsync();
+            await KamiToolKitLibrary.DisposeAsync();
+        });
     }
 
     private void OnCommand(string command, string args)
