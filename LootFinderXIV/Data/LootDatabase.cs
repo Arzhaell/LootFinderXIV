@@ -133,6 +133,7 @@ public sealed class LootDatabase
                     : "?",
                 Level = cfc.ClassJobLevelRequired,
                 ItemLevel = cfc.ItemLevelRequired,
+                Icon = cfc.ContentType.ValueNullable?.Icon ?? 0,
                 ClearGil = instance?.InstanceClearGil ?? 0,
             };
 

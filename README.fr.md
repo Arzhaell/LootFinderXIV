@@ -14,10 +14,15 @@ La fiche est une fenêtre native, au style du jeu (bibliothèque [KamiToolKit](h
 
 ## Utilisation
 
+- **Toutes les missions** : **`/lootfinder`** (ou `/lfind`, ou le bouton du plugin dans Dalamud) liste tous les
+  donjons, défis, raids… groupés par type, avec le nombre de récompenses rares obtenues (**x/x**). Un clic sur une
+  mission ouvre sa fiche. « Masquer les complètes » ne garde que les missions où il reste des rares à obtenir.
 - **Outil de mission / outil de recherche de raid** : la fiche s'ouvre à côté et suit la mission sélectionnée,
   puis se referme avec lui (désactivable).
-- **Pendant une mission** : cliquer sur **« Butin 1/2 »** dans la barre d'infos serveur (en haut à droite).
-- **`/lootfinder`** (ou `/lfind`) : ouvre / ferme la fiche. **`/lootfinder config`** : paramètres.
+- **Pendant une mission** : **« Butin 1/2 »** dans la barre d'infos serveur (en haut à droite) : clic gauche pour la
+  fiche, clic droit pour la liste de toutes les missions.
+- **`/lootfinder fiche`** : ouvre / ferme la fiche de la mission sélectionnée ou en cours. **`/lootfinder config`** :
+  paramètres.
 
 L'interface est en français ou en anglais, selon la langue choisie dans les réglages de Dalamud.
 

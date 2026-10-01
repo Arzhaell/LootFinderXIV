@@ -36,6 +36,7 @@ public sealed class LootWindow : NativeAddon
     private TextNode? emptyNode;
     private uint shownDutyId;
     private bool refreshQueued;
+    private DutySheet? pinnedDuty;
 
     public required DutyWatcher Watcher { get; init; }
     public required OwnershipService Ownership { get; init; }
@@ -43,6 +44,22 @@ public sealed class LootWindow : NativeAddon
 
     /// <summary>Appelé quand la fenêtre se ferme (par le joueur ou le plugin).</summary>
     public Action? OnClosed { get; set; }
+
+    /// <summary>Mission affichée : celle choisie dans la liste, sinon la mission active.</summary>
+    public DutySheet? CurrentDuty => pinnedDuty ?? Watcher.ActiveDuty;
+
+    /// <summary>Affiche une mission choisie dans la liste (jusqu'au prochain changement de mission active).</summary>
+    public void ShowDuty(DutySheet duty)
+    {
+        pinnedDuty = duty;
+        if (IsOpen)
+            QueueRefresh();
+        else
+            Open();
+    }
+
+    /// <summary>Revient à la mission active (outil de mission ou mission en cours).</summary>
+    public void ClearPinnedDuty() => pinnedDuty = null;
 
     /// <summary>Reconstruit la fiche à la frame suivante (plusieurs demandes sont regroupées).</summary>
     public void QueueRefresh()
@@ -121,6 +138,7 @@ public sealed class LootWindow : NativeAddon
         hideObtainedNode = null;
         body = null;
         emptyNode = null;
+        pinnedDuty = null;
         OnClosed?.Invoke();
     }
 
@@ -136,7 +154,7 @@ public sealed class LootWindow : NativeAddon
         var list = body.ContentNode;
         list.Clear();
 
-        if (Watcher.ActiveDuty is not { } duty)
+        if (CurrentDuty is not { } duty)
         {
             shownDutyId = 0;
             WindowNode?.SetTitle(DefaultTitle);

@@ -17,6 +17,9 @@ public sealed class Configuration : IPluginConfiguration
 
     public bool HideObtained = false;
 
+    /// <summary>Liste des missions : masque celles dont tous les loots rares sont obtenus.</summary>
+    public bool HideCompletedDuties = false;
+
     /// <summary>Historique par personnage (clé : ContentId).</summary>
     public Dictionary<ulong, CharacterData> Characters = [];
 

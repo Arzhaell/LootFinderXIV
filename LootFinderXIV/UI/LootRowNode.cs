@@ -59,6 +59,17 @@ public sealed unsafe class LootRowNode : SimpleComponentNode
     /// <summary>Clic droit sur la ligne.</summary>
     public Action? OnRightClick { get; set; }
 
+    /// <summary>Clic gauche sur la ligne (affiche aussi le curseur de clic).</summary>
+    public Action? OnLeftClick
+    {
+        get;
+        set
+        {
+            field = value;
+            CollisionNode.ShowClickableCursor = value != null;
+        }
+    }
+
     public uint IconId
     {
         set => iconNode.IconId = value;
@@ -118,5 +129,7 @@ public sealed unsafe class LootRowNode : SimpleComponentNode
     {
         if (data->IsRightClick)
             OnRightClick?.Invoke();
+        else if (data->IsLeftClick)
+            OnLeftClick?.Invoke();
     }
 }

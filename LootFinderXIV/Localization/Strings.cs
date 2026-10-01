@@ -58,6 +58,15 @@ public static class Strings
     public static string Percent(decimal value) => string.Format(Culture, T("{0:0.#} %", "{0:0.#}%"), value);
     public static string ItemLevel(uint level) => string.Format(Culture, "iLvl {0}", level);
 
+    // Liste de toutes les missions
+
+    public static string OverviewTitle => T("Toutes les missions", "All duties");
+    public static string HideCompletedDuties => T("Masquer les complètes", "Hide completed");
+    public static string Level(byte level) => F("Niv. {0}", "Lv. {0}", level);
+    public static string Progress(int obtained, int total) => total == 0 ? "—" : $"{obtained}/{total}";
+    public static string OverviewSection(string contentType, int obtained, int total) => $"{contentType}   {Progress(obtained, total)}";
+    public static string OpenSheetTooltip => T("Cliquer pour afficher la fiche.", "Click to show the loot sheet.");
+
     // Coffres et sources
 
     public static string BossName(BossRef boss) => boss.Name ?? F("Boss {0}", "Boss {0}", boss.FightNo + 1);
@@ -120,15 +129,20 @@ public static class Strings
     public static string SettingHideObtained => T("Masquer les objets déjà obtenus", "Hide items already obtained");
 
     public static string CommandHelp => T(
-        "Affiche la fiche de butin de la mission sélectionnée ou en cours. « config » pour les paramètres.",
-        "Shows the loot sheet of the selected or current duty. \"config\" for settings.");
+        "Affiche la liste de toutes les missions. « fiche » : fiche de la mission sélectionnée ou en cours ; « config » : paramètres.",
+        "Shows the list of all duties. \"sheet\": loot sheet of the selected or current duty; \"config\": settings.");
 
     public static string ServerInfoText(int obtained, int total) => total > 0
         ? F("Butin {0}/{1}", "Loot {0}/{1}", obtained, total)
         : T("Butin", "Loot");
 
-    public static string ServerInfoTooltip(DutySheet duty, int obtained, int total) =>
-        $"LootFinderXIV: {duty.Name}\n"
-        + (total > 0 ? F("Récompenses rares obtenues : {0}/{1}\n", "Rare rewards obtained: {0}/{1}\n", obtained, total) : string.Empty)
-        + T("Cliquer pour afficher la fiche.", "Click to show the loot sheet.");
+    public static string ServerInfoTooltip(DutySheet? duty, int obtained, int total)
+    {
+        if (duty == null)
+            return "LootFinderXIV\n" + T("Cliquer pour voir toutes les missions.", "Click to see all duties.");
+
+        return $"LootFinderXIV: {duty.Name}\n"
+            + (total > 0 ? F("Récompenses rares obtenues : {0}/{1}\n", "Rare rewards obtained: {0}/{1}\n", obtained, total) : string.Empty)
+            + T("Clic gauche : fiche de la mission\nClic droit : toutes les missions", "Left click: duty loot sheet\nRight click: all duties");
+    }
 }

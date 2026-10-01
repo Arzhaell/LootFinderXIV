@@ -116,6 +116,9 @@ public sealed class DutySheet
     public required byte Level { get; init; }
     public required ushort ItemLevel { get; init; }
 
+    /// <summary>Icône du type de mission (donjon, défi, raid...).</summary>
+    public uint Icon { get; init; }
+
     /// <summary>Coffres de boss dans l'ordre des combats, puis coffres au trésor, puis autres objets.</summary>
     public List<LootChest> Chests { get; } = [];
 

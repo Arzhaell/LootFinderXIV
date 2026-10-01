@@ -36,8 +36,10 @@ public sealed class Plugin : IAsyncDalamudPlugin
     private OwnershipService? ownership;
     private DutyWatcher? watcher;
     private LootWindow? lootWindow;
+    private OverviewWindow? overviewWindow;
     private SettingsWindow? settingsWindow;
     private IDtrBarEntry? dtrEntry;
+    private DutySheet? lastActiveDuty;
 
     // Ouverture automatique avec l'outil de mission.
     private bool autoOpened;
@@ -65,13 +67,24 @@ public sealed class Plugin : IAsyncDalamudPlugin
             OnClosed = OnLootWindowClosed,
         };
 
+        overviewWindow = new OverviewWindow
+        {
+            InternalName = "LootFinderXIVList",
+            Title = LootWindow.DefaultTitle,
+            Size = OverviewWindow.DefaultSize,
+            Database = database,
+            Ownership = ownership,
+            Config = config,
+            OnDutySelected = ShowDutyFromList,
+        };
+
         settingsWindow = new SettingsWindow(config, OnSettingsChanged);
         windowSystem.AddWindow(settingsWindow);
 
         await Framework.RunOnFrameworkThread(() =>
         {
             dtrEntry = DtrBar.Get("LootFinderXIV");
-            dtrEntry.OnClick = _ => ToggleLootWindow();
+            dtrEntry.OnClick = OnServerInfoClick;
             watcher.Changed += OnDutyChanged;
             ownership.Changed += OnOwnershipChanged;
             UpdateServerInfoEntry();
@@ -84,7 +97,7 @@ public sealed class Plugin : IAsyncDalamudPlugin
         CommandManager.AddHandler(ShortCommandName, new CommandInfo(OnCommand) { ShowInHelp = false });
 
         PluginInterface.UiBuilder.Draw += windowSystem.Draw;
-        PluginInterface.UiBuilder.OpenMainUi += ToggleLootWindow;
+        PluginInterface.UiBuilder.OpenMainUi += ToggleOverview;
         PluginInterface.UiBuilder.OpenConfigUi += ToggleSettings;
         PluginInterface.LanguageChanged += OnLanguageChanged;
     }
@@ -93,7 +106,7 @@ public sealed class Plugin : IAsyncDalamudPlugin
     {
         PluginInterface.LanguageChanged -= OnLanguageChanged;
         PluginInterface.UiBuilder.Draw -= windowSystem.Draw;
-        PluginInterface.UiBuilder.OpenMainUi -= ToggleLootWindow;
+        PluginInterface.UiBuilder.OpenMainUi -= ToggleOverview;
         PluginInterface.UiBuilder.OpenConfigUi -= ToggleSettings;
         CommandManager.RemoveHandler(CommandName);
         CommandManager.RemoveHandler(ShortCommandName);
@@ -112,19 +125,31 @@ public sealed class Plugin : IAsyncDalamudPlugin
 
         if (lootWindow != null)
             await lootWindow.DisposeAsync();
+        if (overviewWindow != null)
+            await overviewWindow.DisposeAsync();
 
         await KamiToolKitLibrary.DisposeAsync();
     }
 
     private void OnCommand(string command, string args)
     {
-        if (args.Trim().Equals("config", System.StringComparison.OrdinalIgnoreCase))
-            ToggleSettings();
-        else
-            ToggleLootWindow();
+        switch (args.Trim().ToLowerInvariant())
+        {
+            case "config":
+                ToggleSettings();
+                break;
+            case "fiche" or "sheet":
+                ToggleLootWindow();
+                break;
+            default:
+                ToggleOverview();
+                break;
+        }
     }
 
     private void ToggleSettings() => settingsWindow?.Toggle();
+
+    private void ToggleOverview() => overviewWindow?.Toggle();
 
     private void ToggleLootWindow()
     {
@@ -134,6 +159,23 @@ public sealed class Plugin : IAsyncDalamudPlugin
         lootWindow.Toggle();
     }
 
+    private void ShowDutyFromList(DutySheet duty)
+    {
+        if (lootWindow == null)
+            return;
+        autoOpened = false;
+        lootWindow.ShowDuty(duty);
+    }
+
+    private void OnServerInfoClick(DtrInteractionEvent interaction)
+    {
+        // Clic droit, ou aucune mission active : liste de toutes les missions.
+        if (interaction.ClickType == MouseClickType.Right || watcher?.ActiveDuty == null)
+            ToggleOverview();
+        else
+            ToggleLootWindow();
+    }
+
     private void OnLanguageChanged(string languageCode)
     {
         Strings.SetLanguage(languageCode);
@@ -141,6 +183,7 @@ public sealed class Plugin : IAsyncDalamudPlugin
         {
             UpdateServerInfoEntry();
             lootWindow?.QueueRefresh();
+            overviewWindow?.QueueRefresh(rebuild: true);
         });
     }
 
@@ -148,12 +191,14 @@ public sealed class Plugin : IAsyncDalamudPlugin
     {
         UpdateServerInfoEntry();
         lootWindow?.QueueRefresh();
+        overviewWindow?.QueueRefresh(rebuild: true);
     }
 
     private void OnOwnershipChanged()
     {
         UpdateServerInfoEntry();
         lootWindow?.QueueRefresh();
+        overviewWindow?.QueueRefresh();
     }
 
     private void OnDutyChanged()
@@ -162,6 +207,13 @@ public sealed class Plugin : IAsyncDalamudPlugin
             return;
 
         UpdateServerInfoEntry();
+
+        // Nouvelle mission active : la fiche cesse d'afficher la mission choisie dans la liste.
+        if (watcher.ActiveDuty != lastActiveDuty)
+        {
+            lastActiveDuty = watcher.ActiveDuty;
+            lootWindow.ClearPinnedDuty();
+        }
 
         if (!watcher.FinderOpen)
         {
@@ -210,13 +262,14 @@ public sealed class Plugin : IAsyncDalamudPlugin
         if (dtrEntry == null || watcher == null || ownership == null)
             return;
 
-        if (!config.ShowServerInfoEntry || watcher.ActiveDuty is not { } duty)
+        if (!config.ShowServerInfoEntry)
         {
             dtrEntry.Shown = false;
             return;
         }
 
-        var (obtained, total) = ownership.GetRareProgress(duty);
+        var duty = watcher.ActiveDuty;
+        var (obtained, total) = duty != null ? ownership.GetRareProgress(duty) : (0, 0);
         dtrEntry.Text = Strings.ServerInfoText(obtained, total);
         dtrEntry.Tooltip = Strings.ServerInfoTooltip(duty, obtained, total);
         dtrEntry.Shown = true;
