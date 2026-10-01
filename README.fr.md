@@ -12,6 +12,15 @@ Plugin Dalamud pour FINAL FANTASY XIV qui affiche, pour chaque mission, une **fi
 
 La fiche est une fenêtre native, au style du jeu (bibliothèque [KamiToolKit](https://github.com/MidoriKami/KamiToolKit)).
 
+## Installation
+
+1. En jeu, ouvrir `/xlsettings` → **Expérimental**.
+2. Dans **Dépôts de plugins personnalisés**, ajouter l'adresse ci-dessous, cocher **Activé**, puis **Enregistrer** :
+   ```
+   https://raw.githubusercontent.com/Arzhaell/LootFinderXIV/main/repo.json
+   ```
+3. Ouvrir `/xlplugins`, chercher **LootFinderXIV** et l'installer. Les mises à jour sont ensuite installées par Dalamud.
+
 ## Utilisation
 
 - **Toutes les missions** : **`/lootfinder`** (ou `/lfind`, ou le bouton du plugin dans Dalamud) liste tous les

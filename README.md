@@ -12,6 +12,15 @@ Dalamud plugin for FINAL FANTASY XIV that shows, for each duty, a **database-sty
 
 The sheet is a native, game-styled window (library [KamiToolKit](https://github.com/MidoriKami/KamiToolKit)).
 
+## Installation
+
+1. In game, open `/xlsettings` → **Experimental**.
+2. Under **Custom Plugin Repositories**, add the URL below, tick **Enabled**, then click **Save**:
+   ```
+   https://raw.githubusercontent.com/Arzhaell/LootFinderXIV/main/repo.json
+   ```
+3. Open `/xlplugins`, search for **LootFinderXIV** and install it. Updates are then installed by Dalamud.
+
 ## Usage
 
 - **All duties**: **`/lootfinder`** (or `/lfind`, or the plugin's button in Dalamud) lists every dungeon, trial,

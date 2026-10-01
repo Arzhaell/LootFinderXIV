@@ -1,0 +1,24 @@
+[
+  {
+    "Author": "Arzhael",
+    "Name": "LootFinderXIV",
+    "InternalName": "LootFinderXIV",
+    "AssemblyVersion": "1.1.0.0",
+    "TestingAssemblyVersion": "1.1.0.0",
+    "Punchline": "The loot sheet of every duty: rare rewards, tomestones and coffers.",
+    "Description": "Shows a database-style loot sheet for each duty: rare rewards (minions, mounts, orchestrion rolls) obtained or not, tomestones and gil per boss, and the content of every coffer with what you already own. Opens next to the Duty Finder or from the server info bar. Interface in English and French.",
+    "Changelog": "1.1.0: new \"All duties\" window listing every duty with its rare rewards obtained (x/x).",
+    "ApplicableVersion": "any",
+    "RepoUrl": "https://github.com/Arzhaell/LootFinderXIV",
+    "Tags": [ "loot", "dungeon", "duty", "minion", "mount", "orchestrion", "tomestone", "collection" ],
+    "DalamudApiLevel": 15,
+    "LoadPriority": 0,
+    "IsHide": false,
+    "IsTestingExclusive": false,
+    "AcceptsFeedback": false,
+    "LastUpdate": 1790815717,
+    "DownloadLinkInstall": "https://github.com/Arzhaell/LootFinderXIV/releases/download/v1.1.0/LootFinderXIV-1.1.0.zip",
+    "DownloadLinkTesting": "https://github.com/Arzhaell/LootFinderXIV/releases/download/v1.1.0/LootFinderXIV-1.1.0.zip",
+    "DownloadLinkUpdate": "https://github.com/Arzhaell/LootFinderXIV/releases/download/v1.1.0/LootFinderXIV-1.1.0.zip"
+  }
+]
