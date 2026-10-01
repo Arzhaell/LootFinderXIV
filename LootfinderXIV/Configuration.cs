@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Dalamud.Configuration;
 
-namespace Lootfinder;
+namespace LootfinderXIV;
 
 [Serializable]
 public sealed class Configuration : IPluginConfiguration

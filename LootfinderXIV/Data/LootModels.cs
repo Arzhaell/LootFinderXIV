@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Numerics;
 using Lumina.Excel.Sheets;
 
-namespace Lootfinder.Data;
+namespace LootfinderXIV.Data;
 
 public enum LootCategory
 {
