@@ -1,6 +1,6 @@
 {
   "Author": "Arzhael",
-  "Name": "LootfinderXIV",
+  "Name": "LootFinderXIV",
   "Punchline": "La fiche de butin de chaque mission : rares, mémoquartz et coffres.",
   "Description": "Affiche pour chaque mission une fiche façon base de données : récompenses rares (mascottes, montures, rouleaux d'orchestrion) obtenues ou non, mémoquartz et gils par boss, et le contenu de chaque coffre avec ce que vous avez déjà obtenu. S'ouvre avec l'outil de mission ou depuis la barre d'infos serveur.",
   "ApplicableVersion": "any",

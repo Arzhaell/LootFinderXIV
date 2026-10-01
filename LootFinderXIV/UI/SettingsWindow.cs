@@ -2,7 +2,7 @@ using System;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Windowing;
 
-namespace LootfinderXIV.UI;
+namespace LootFinderXIV.UI;
 
 public sealed class SettingsWindow : Window
 {
@@ -10,7 +10,7 @@ public sealed class SettingsWindow : Window
     private readonly Action onChanged;
 
     public SettingsWindow(Configuration config, Action onChanged)
-        : base("LootfinderXIV : paramètres###LootfinderXIVSettings", ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoCollapse)
+        : base("LootFinderXIV : paramètres###LootFinderXIVSettings", ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoCollapse)
     {
         this.config = config;
         this.onChanged = onChanged;

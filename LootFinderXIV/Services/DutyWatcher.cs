@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
-using LootfinderXIV.Data;
+using LootFinderXIV.Data;
 
-namespace LootfinderXIV.Services;
+namespace LootFinderXIV.Services;
 
 /// <summary>
 /// Détermine la mission à afficher en sondant régulièrement le jeu : la mission sélectionnée dans

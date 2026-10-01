@@ -2,5 +2,5 @@
   <Project Path="KamiToolKit/KamiToolKit.csproj">
     <Platform Project="x64" />
   </Project>
-  <Project Path="LootfinderXIV/LootfinderXIV.csproj" />
+  <Project Path="LootFinderXIV/LootFinderXIV.csproj" />
 </Solution>

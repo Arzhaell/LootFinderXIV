@@ -8,11 +8,11 @@ using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
 using KamiToolKit;
-using LootfinderXIV.Data;
-using LootfinderXIV.Services;
-using LootfinderXIV.UI;
+using LootFinderXIV.Data;
+using LootFinderXIV.Services;
+using LootFinderXIV.UI;
 
-namespace LootfinderXIV;
+namespace LootFinderXIV;
 
 public sealed class Plugin : IAsyncDalamudPlugin
 {
@@ -30,7 +30,7 @@ public sealed class Plugin : IAsyncDalamudPlugin
     [PluginService] internal static IFramework Framework { get; private set; } = null!;
     [PluginService] internal static IPluginLog Log { get; private set; } = null!;
 
-    private readonly WindowSystem windowSystem = new("LootfinderXIV");
+    private readonly WindowSystem windowSystem = new("LootFinderXIV");
     private Configuration config = null!;
     private OwnershipService? ownership;
     private DutyWatcher? watcher;
@@ -46,7 +46,7 @@ public sealed class Plugin : IAsyncDalamudPlugin
     {
         config = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
 
-        await KamiToolKitLibrary.InitializeAsync(PluginInterface, "LootfinderXIV");
+        await KamiToolKitLibrary.InitializeAsync(PluginInterface, "LootFinderXIV");
 
         var database = await Task.Run(() => LootDatabase.Load(DataManager.GameData, Log), cancellationToken);
         ownership = new OwnershipService(config, database);
@@ -54,7 +54,7 @@ public sealed class Plugin : IAsyncDalamudPlugin
 
         lootWindow = new LootWindow
         {
-            InternalName = "LootfinderXIVDuty",
+            InternalName = "LootFinderXIVDuty",
             Title = LootWindow.DefaultTitle,
             Size = LootWindow.DefaultSize,
             Watcher = watcher,
@@ -68,7 +68,7 @@ public sealed class Plugin : IAsyncDalamudPlugin
 
         await Framework.RunOnFrameworkThread(() =>
         {
-            dtrEntry = DtrBar.Get("LootfinderXIV");
+            dtrEntry = DtrBar.Get("LootFinderXIV");
             dtrEntry.OnClick = _ => ToggleLootWindow();
             watcher.Changed += OnDutyChanged;
             ownership.Changed += OnOwnershipChanged;
@@ -204,7 +204,7 @@ public sealed class Plugin : IAsyncDalamudPlugin
 
         var (obtained, total) = ownership.GetRareProgress(duty);
         dtrEntry.Text = total > 0 ? $"Butin {obtained}/{total}" : "Butin";
-        dtrEntry.Tooltip = $"LootfinderXIV : {duty.Name}\n"
+        dtrEntry.Tooltip = $"LootFinderXIV : {duty.Name}\n"
             + (total > 0 ? $"Récompenses rares obtenues : {obtained}/{total}\n" : string.Empty)
             + "Cliquer pour afficher la fiche.";
         dtrEntry.Shown = true;

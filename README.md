@@ -1,4 +1,4 @@
-# LootfinderXIV
+# LootFinderXIV
 
 Plugin Dalamud pour FINAL FANTASY XIV qui affiche, pour chaque mission, une **fiche façon base de données** :
 
@@ -23,7 +23,7 @@ forcer le statut « obtenu ». Case « Masquer les obtenus » pour ne garder que
 ## Comment le statut « obtenu » est déterminé
 
 - **Mascottes, montures, orchestrion, cartes…** : état de déblocage du jeu, toujours exact.
-- **Équipement et autres** : le jeu ne garde pas d'historique. LootfinderXIV mémorise, par personnage, les objets vus
+- **Équipement et autres** : le jeu ne garde pas d'historique. LootFinderXIV mémorise, par personnage, les objets vus
   dans l'inventaire, l'arsenal, l'équipement porté, les sacoches, le coffre à apparences et l'armoire (ces deux
   derniers une fois ouverts). Un objet revendu avant l'installation n'est pas détecté : clic droit pour le marquer.
 
@@ -46,7 +46,7 @@ dotnet build -c Release
 Si une mise à jour de Dalamud casse la compilation de KamiToolKit, passer le sous-module sur une version plus
 récente (`git -C KamiToolKit pull origin main`) puis committer le nouveau commit du sous-module.
 
-Plugin de dev : `LootfinderXIV\bin\Release\LootfinderXIV.dll` (déjà ajouté dans la configuration de Dalamud, chargé au
+Plugin de dev : `LootFinderXIV\bin\Release\LootFinderXIV.dll` (déjà ajouté dans la configuration de Dalamud, chargé au
 démarrage et rechargé automatiquement à chaque compilation).
 
 ## Données et licences
@@ -56,4 +56,4 @@ démarrage et rechargé automatiquement à chaque compilation).
 - Mémoquartz, gils, noms, icônes, déblocages : fichiers du jeu (feuilles `InstanceContent`, `TomestonesItem`...).
 - KamiToolKit : MIT.
 
-LootfinderXIV est distribué sous licence **GPL-3.0** (voir `LICENSE`), comme l'exige LuminaSupplemental.
+LootFinderXIV est distribué sous licence **GPL-3.0** (voir `LICENSE`), comme l'exige LuminaSupplemental.

@@ -4,7 +4,7 @@ using FFXIVClientStructs.FFXIV.Component.GUI;
 using KamiToolKit.Nodes;
 using KamiToolKit.Nodes.Simplified;
 
-namespace LootfinderXIV.UI;
+namespace LootFinderXIV.UI;
 
 /// <summary>
 /// Une ligne de la fiche : icône, nom, détail (chance, niveau...) et statut, alignés en colonnes.

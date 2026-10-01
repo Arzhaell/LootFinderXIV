@@ -5,10 +5,10 @@ using Dalamud.Game.Inventory.InventoryEventArgTypes;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
-using LootfinderXIV.Data;
-using LootItem = LootfinderXIV.Data.LootItem;
+using LootFinderXIV.Data;
+using LootItem = LootFinderXIV.Data.LootItem;
 
-namespace LootfinderXIV.Services;
+namespace LootFinderXIV.Services;
 
 public enum ObtainedSource
 {

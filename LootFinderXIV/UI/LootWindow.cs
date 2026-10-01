@@ -6,18 +6,18 @@ using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using KamiToolKit.BaseTypes;
 using KamiToolKit.Nodes;
-using LootfinderXIV.Data;
-using LootfinderXIV.Services;
+using LootFinderXIV.Data;
+using LootFinderXIV.Services;
 using ContextMenu = KamiToolKit.ContextMenu.ContextMenu;
 
-namespace LootfinderXIV.UI;
+namespace LootFinderXIV.UI;
 
 /// <summary>
 /// Fiche de la mission façon base de données : loots rares, mémoquartz et gils, puis un bloc par coffre.
 /// </summary>
 public sealed class LootWindow : NativeAddon
 {
-    public const string DefaultTitle = "LootfinderXIV";
+    public const string DefaultTitle = "LootFinderXIV";
     public static readonly Vector2 DefaultSize = new(460.0f, 620.0f);
 
     private const float HeaderHeight = 24.0f;

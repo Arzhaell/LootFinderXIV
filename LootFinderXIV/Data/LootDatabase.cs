@@ -10,7 +10,7 @@ using Lumina.Excel.Sheets;
 using LuminaSupplemental.Excel.Model;
 using LuminaSupplemental.Excel.Services;
 
-namespace LootfinderXIV.Data;
+namespace LootFinderXIV.Data;
 
 /// <summary>
 /// Construit, pour chaque mission (ContentFinderCondition), une fiche façon base de données :
