@@ -49,27 +49,48 @@ public enum ChestKind
     Other,
 }
 
+/// <summary>Un boss de la mission ; Name est null quand son nom n'est pas connu.</summary>
+public readonly record struct BossRef(uint FightNo, string? Name);
+
 public sealed class LootChest
 {
-    public required string Title { get; init; }
     public required ChestKind Kind { get; init; }
+
+    /// <summary>Boss qui fait apparaître le coffre (coffres de boss uniquement).</summary>
+    public BossRef? Boss { get; init; }
+
+    /// <summary>Numéro du coffre au trésor, ou du coffre de boss quand le boss en a plusieurs (sinon 0).</summary>
+    public int Number { get; init; }
 
     /// <summary>Coordonnées sur la carte du jeu (coffres au trésor uniquement).</summary>
     public Vector2? MapCoordinates { get; init; }
 
+    /// <summary>Identifiant stable dans la mission (pour mémoriser les sections repliées).</summary>
+    public string Key => $"{Kind}-{Boss?.FightNo}-{Number}";
+
     public List<LootEntry> Entries { get; } = [];
 }
 
-/// <summary>Un objet rare et les coffres qui peuvent le contenir.</summary>
-public sealed record RareLoot(LootItem Item, IReadOnlyList<string> Sources);
+public enum RareSourceKind
+{
+    Chest,
+    BossDrop,
+    DutyDrop,
+}
+
+/// <summary>Où un objet rare peut s'obtenir : un coffre (avec sa chance), un boss, ou ailleurs dans la mission.</summary>
+public sealed record RareSource(RareSourceKind Kind, LootChest? Chest, BossRef? Boss, decimal? Probability);
+
+/// <summary>Un objet rare et les endroits où l'obtenir.</summary>
+public sealed record RareLoot(LootItem Item, IReadOnlyList<RareSource> Sources);
 
 /// <summary>Mémoquartz d'un type donné rapportés par la mission.</summary>
 public sealed class TomestoneReward
 {
     public required LootItem Tomestone { get; init; }
 
-    /// <summary>Quantité par boss (« Boss final » compris), dans l'ordre de la mission.</summary>
-    public required IReadOnlyList<(string Source, uint Amount)> Amounts { get; init; }
+    /// <summary>Quantité par boss, dans l'ordre de la mission (IsFinal : boss final).</summary>
+    public required IReadOnlyList<(BossRef Boss, bool IsFinal, uint Amount)> Amounts { get; init; }
 
     /// <summary>Bonus quand un joueur fait la mission pour la première fois.</summary>
     public uint NewPlayerBonus { get; init; }
@@ -79,7 +100,7 @@ public sealed class TomestoneReward
         get
         {
             uint total = 0;
-            foreach (var (_, amount) in Amounts)
+            foreach (var (_, _, amount) in Amounts)
                 total += amount;
             return total;
         }

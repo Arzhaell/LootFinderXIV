@@ -1,8 +1,9 @@
 {
   "Author": "Arzhael",
   "Name": "LootFinderXIV",
-  "Punchline": "La fiche de butin de chaque mission : rares, mémoquartz et coffres.",
-  "Description": "Affiche pour chaque mission une fiche façon base de données : récompenses rares (mascottes, montures, rouleaux d'orchestrion) obtenues ou non, mémoquartz et gils par boss, et le contenu de chaque coffre avec ce que vous avez déjà obtenu. S'ouvre avec l'outil de mission ou depuis la barre d'infos serveur.",
+  "Punchline": "The loot sheet of every duty: rare rewards, tomestones and coffers.",
+  "Description": "Shows a database-style loot sheet for each duty: rare rewards (minions, mounts, orchestrion rolls) obtained or not, tomestones and gil per boss, and the content of every coffer with what you already own. Opens next to the Duty Finder or from the server info bar. Interface in English and French.",
+  "RepoUrl": "https://github.com/Arzhaell/LootFinderXIV",
   "ApplicableVersion": "any",
-  "Tags": [ "loot", "dungeon", "donjon", "minion", "mount", "orchestrion", "tomestone", "collection" ]
+  "Tags": [ "loot", "dungeon", "duty", "minion", "mount", "orchestrion", "tomestone", "collection" ]
 }

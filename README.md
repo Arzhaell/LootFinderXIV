@@ -1,39 +1,42 @@
 # LootFinderXIV
 
-Plugin Dalamud pour FINAL FANTASY XIV qui affiche, pour chaque mission, une **fiche façon base de données** :
+*English · [Français](README.fr.md)*
 
-1. **Récompenses rares** (mascottes, montures, rouleaux d'orchestrion) : obtenues ou non, et où les trouver.
-2. **Mémoquartz et gils** : quantité par boss, total, bonus quand un joueur découvre la mission.
-3. **Un bloc par coffre** : chaque coffre de boss, puis chaque coffre au trésor (avec ses coordonnées sur la
-   carte), avec l'équipement qu'il contient, sa chance d'apparition ou son niveau d'objet, et son statut.
-4. **Autres objets** : cartes Triple Triad et objets lâchés directement.
+Dalamud plugin for FINAL FANTASY XIV that shows, for each duty, a **database-style loot sheet**:
 
-La fiche est une fenêtre native, au style du jeu (bibliothèque [KamiToolKit](https://github.com/MidoriKami/KamiToolKit)).
+1. **Rare rewards** (minions, mounts, orchestrion rolls): obtained or not, and where to find them.
+2. **Tomestones and gil**: amount per boss, total, and the bonus when a player is new to the duty.
+3. **One block per coffer**: each boss coffer, then each treasure coffer (with its map coordinates), with the
+   equipment it contains, its drop chance or item level, and its status.
+4. **Other items**: Triple Triad cards and items dropped directly.
 
-## Utilisation
+The sheet is a native, game-styled window (library [KamiToolKit](https://github.com/MidoriKami/KamiToolKit)).
 
-- **Outil de mission / outil de recherche de raid** : la fiche s'ouvre à côté et suit la mission sélectionnée,
-  puis se referme avec lui (désactivable).
-- **Pendant une mission** : cliquer sur **« Butin 1/2 »** dans la barre d'infos serveur (en haut à droite).
-- **`/lootfinder`** (ou `/lfind`) : ouvre / ferme la fiche. **`/lootfinder config`** : paramètres.
+## Usage
 
-Dans la fiche : survol de l'icône = infobulle du jeu ; clic droit sur un objet = lien dans le chat, essayer,
-forcer le statut « obtenu ». Case « Masquer les obtenus » pour ne garder que ce qu'il reste à obtenir.
+- **Duty Finder / Raid Finder**: the sheet opens next to it, follows the selected duty, and closes with it
+  (can be turned off).
+- **During a duty**: click **"Loot 1/2"** in the server info bar (top right).
+- **`/lootfinder`** (or `/lfind`): open / close the sheet. **`/lootfinder config`**: settings.
 
-## Comment le statut « obtenu » est déterminé
+The interface is in English or French, following the language set in Dalamud's settings.
 
-- **Mascottes, montures, orchestrion, cartes…** : état de déblocage du jeu, toujours exact.
-- **Équipement et autres** : le jeu ne garde pas d'historique. LootFinderXIV mémorise, par personnage, les objets vus
-  dans l'inventaire, l'arsenal, l'équipement porté, les sacoches, le coffre à apparences et l'armoire (ces deux
-  derniers une fois ouverts). Un objet revendu avant l'installation n'est pas détecté : clic droit pour le marquer.
+In the sheet: hover an icon for the game's item tooltip; right-click an item to link it in chat, try it on, or
+force its "obtained" status. Tick "Hide obtained" to keep only what you still need.
 
-## Compiler
+## How "obtained" is determined
 
-Prérequis : SDK .NET 10 et XIVLauncher/Dalamud (le SDK Dalamud trouve les DLL dans
+- **Minions, mounts, orchestrion rolls, cards…**: the game's unlock state, always accurate.
+- **Equipment and other items**: the game keeps no history. LootFinderXIV remembers, per character, the items seen
+  in your inventory, armoury chest, equipped gear, saddlebags, glamour dresser and armoire (the last two once
+  opened). An item sold before installing the plugin can't be detected: right-click to mark it.
+
+## Building
+
+Requirements: .NET 10 SDK and XIVLauncher/Dalamud (the Dalamud SDK finds its assemblies in
 `%APPDATA%\XIVLauncher\addon\Hooks\dev`).
 
-KamiToolKit est un sous-module Git (figé sur le commit `6b7b191`) : cloner avec `--recursive`, ou récupérer le
-sous-module après coup.
+KamiToolKit is a Git submodule (pinned to commit `6b7b191`): clone with `--recursive`, or fetch it afterwards.
 
 ```bash
 git submodule update --init
@@ -43,17 +46,16 @@ git submodule update --init
 dotnet build -c Release
 ```
 
-Si une mise à jour de Dalamud casse la compilation de KamiToolKit, passer le sous-module sur une version plus
-récente (`git -C KamiToolKit pull origin main`) puis committer le nouveau commit du sous-module.
+If a Dalamud update breaks the KamiToolKit build, move the submodule to a newer version
+(`git -C KamiToolKit pull origin main`) and commit the new submodule commit.
 
-Plugin de dev : `LootFinderXIV\bin\Release\LootFinderXIV.dll` (déjà ajouté dans la configuration de Dalamud, chargé au
-démarrage et rechargé automatiquement à chaque compilation).
+Dev plugin: `LootFinderXIV\bin\Release\LootFinderXIV.dll`.
 
-## Données et licences
+## Data and licenses
 
-- Coffres et chances d'apparition : [LuminaSupplemental](https://github.com/Critical-Impact/LuminaSupplemental)
-  (données communautaires, GPL-3.0).
-- Mémoquartz, gils, noms, icônes, déblocages : fichiers du jeu (feuilles `InstanceContent`, `TomestonesItem`...).
-- KamiToolKit : MIT.
+- Coffers and drop chances: [LuminaSupplemental](https://github.com/Critical-Impact/LuminaSupplemental)
+  (community data, GPL-3.0).
+- Tomestones, gil, names, icons, unlocks: game files (`InstanceContent`, `TomestonesItem` sheets...).
+- KamiToolKit: MIT.
 
-LootFinderXIV est distribué sous licence **GPL-3.0** (voir `LICENSE`), comme l'exige LuminaSupplemental.
+LootFinderXIV is released under the **GPL-3.0** license (see `LICENSE`), as required by LuminaSupplemental.

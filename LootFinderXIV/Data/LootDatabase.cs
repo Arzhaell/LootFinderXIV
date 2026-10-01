@@ -113,11 +113,11 @@ public sealed class LootDatabase
             if (string.IsNullOrWhiteSpace(dutyName))
                 continue;
 
-            string BossName(uint fight) =>
+            BossRef Boss(uint fight) => new(fight,
                 bossNames.TryGetValue((cfcId, fight), out var bnpcId)
                 && bnpcNames.GetRowOrDefault(bnpcId)?.Singular.ExtractText() is { Length: > 0 } name
                     ? Capitalize(name)
-                    : $"Boss {fight + 1}";
+                    : null);
 
             var instance = cfc.ContentLinkType == ContentLinkInstance
                 ? instanceContents.GetRowOrDefault(cfc.Content.RowId)
@@ -136,17 +136,16 @@ public sealed class LootDatabase
                 ClearGil = instance?.InstanceClearGil ?? 0,
             };
 
-            // Où trouver chaque objet rare (titre du coffre + chance).
-            var rareSources = new Dictionary<uint, List<string>>();
-            void NoteRare(LootItem item, string source, decimal? probability)
+            // Où trouver chaque objet rare (coffre + chance, boss...).
+            var rareSources = new Dictionary<uint, List<RareSource>>();
+            void NoteRare(LootItem item, RareSource source)
             {
                 if (!item.IsRare)
                     return;
                 if (!rareSources.TryGetValue(item.ItemId, out var list))
                     rareSources[item.ItemId] = list = [];
-                var label = probability is { } p ? $"{source} ({p:0.#} %)" : source;
-                if (!list.Contains(label))
-                    list.Add(label);
+                if (!list.Contains(source))
+                    list.Add(source);
             }
 
             // Coffres de boss. Les coffres au trésor rattachés à un boss sont ses coffres de fin de combat :
@@ -178,14 +177,18 @@ public sealed class LootDatabase
 
                 for (var i = 0; i < coffers.Count; i++)
                 {
-                    var title = coffers.Count > 1 ? $"Coffre {i + 1} : {BossName(fight)}" : $"Coffre : {BossName(fight)}";
-                    var lootChest = new LootChest { Title = title, Kind = ChestKind.BossCoffer };
+                    var lootChest = new LootChest
+                    {
+                        Kind = ChestKind.BossCoffer,
+                        Boss = Boss(fight),
+                        Number = coffers.Count > 1 ? i + 1 : 0,
+                    };
                     foreach (var itemId in coffers[i])
                     {
                         if (GetItem(itemId) is not { } item)
                             continue;
                         var chance = chances.GetValueOrDefault(itemId);
-                        NoteRare(item, title, chance);
+                        NoteRare(item, new RareSource(RareSourceKind.Chest, lootChest, null, chance));
                         lootChest.Entries.Add(new LootEntry(item, chance));
                     }
                     AddChest(duty, lootChest);
@@ -209,32 +212,31 @@ public sealed class LootDatabase
                 Vector2? coordinates = maps.GetRowOrDefault(chest.MapId) is { } map
                     ? MapUtil.WorldToMap(new Vector2(chest.Position.X, chest.Position.Z), map)
                     : null;
-                var title = $"Coffre au trésor n°{++treasureNo}";
-                var lootChest = new LootChest { Title = title, Kind = ChestKind.TreasureChest, MapCoordinates = coordinates };
+                var lootChest = new LootChest { Kind = ChestKind.TreasureChest, Number = ++treasureNo, MapCoordinates = coordinates };
                 foreach (var (itemId, chance) in entries)
                 {
                     if (GetItem(itemId) is not { } item)
                         continue;
-                    NoteRare(item, title, chance);
+                    NoteRare(item, new RareSource(RareSourceKind.Chest, lootChest, null, chance));
                     lootChest.Entries.Add(new LootEntry(item, chance));
                 }
                 AddChest(duty, lootChest);
             }
 
             // Objets lâchés directement (cartes Triple Triad...) ou obtenus ailleurs dans la mission.
-            var other = new LootChest { Title = "Autres objets", Kind = ChestKind.Other };
+            var other = new LootChest { Kind = ChestKind.Other };
             foreach (var drop in bossDropsByDuty[cfcId].OrderBy(d => d.FightNo))
             {
                 if (GetItem(drop.ItemId) is not { } item || other.Entries.Any(e => e.Item.ItemId == item.ItemId))
                     continue;
-                NoteRare(item, $"Lâché par {BossName(drop.FightNo)}", null);
+                NoteRare(item, new RareSource(RareSourceKind.BossDrop, null, Boss(drop.FightNo), null));
                 other.Entries.Add(new LootEntry(item, null));
             }
             foreach (var drop in dutyDropsByDuty[cfcId])
             {
                 if (GetItem(drop.ItemId) is not { } item || other.Entries.Any(e => e.Item.ItemId == item.ItemId))
                     continue;
-                NoteRare(item, "Dans la mission", null);
+                NoteRare(item, new RareSource(RareSourceKind.DutyDrop, null, null, null));
                 other.Entries.Add(new LootEntry(item, null));
             }
             AddChest(duty, other);
@@ -249,7 +251,7 @@ public sealed class LootDatabase
                 : string.Compare(a.Item.Name, b.Item.Name, StringComparison.CurrentCulture));
 
             if (instance is { } content)
-                AddTomestones(duty, content, tomestones, bossesByDuty[cfcId].Select(b => b.FightNo).DefaultIfEmpty().Max(), BossName);
+                AddTomestones(duty, content, tomestones, bossesByDuty[cfcId].Select(b => b.FightNo).DefaultIfEmpty().Max(), Boss);
 
             duty.Items.AddRange(duty.RareItems.Select(r => r.Item)
                 .Concat(duty.Chests.SelectMany(c => c.Entries).Select(e => e.Item))
@@ -284,7 +286,7 @@ public sealed class LootDatabase
     }
 
     private static void AddTomestones(DutySheet duty, InstanceContent content, Dictionary<uint, LootItem> tomestones,
-        uint lastFight, Func<uint, string> bossName)
+        uint lastFight, Func<uint, BossRef> boss)
     {
         var slots = new[]
         {
@@ -298,14 +300,14 @@ public sealed class LootDatabase
             if (!tomestones.TryGetValue(id, out var tomestone))
                 continue;
 
-            var amounts = new List<(string, uint)>();
+            var amounts = new List<(BossRef, bool, uint)>();
             for (var i = 0; i < bossAmounts.Count; i++)
             {
                 if (bossAmounts[i] > 0)
-                    amounts.Add((bossName((uint)i), bossAmounts[i]));
+                    amounts.Add((boss((uint)i), false, bossAmounts[i]));
             }
             if (final > 0)
-                amounts.Add(($"{bossName(lastFight)} (boss final)", final));
+                amounts.Add((boss(lastFight), true, final));
 
             if (amounts.Count > 0)
                 duty.Tomestones.Add(new TomestoneReward { Tomestone = tomestone, Amounts = amounts, NewPlayerBonus = bonus });

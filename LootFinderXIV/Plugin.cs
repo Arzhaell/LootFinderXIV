@@ -9,6 +9,7 @@ using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
 using KamiToolKit;
 using LootFinderXIV.Data;
+using LootFinderXIV.Localization;
 using LootFinderXIV.Services;
 using LootFinderXIV.UI;
 
@@ -45,6 +46,7 @@ public sealed class Plugin : IAsyncDalamudPlugin
     public async Task LoadAsync(CancellationToken cancellationToken)
     {
         config = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
+        Strings.SetLanguage(PluginInterface.UiLanguage);
 
         await KamiToolKitLibrary.InitializeAsync(PluginInterface, "LootFinderXIV");
 
@@ -77,17 +79,19 @@ public sealed class Plugin : IAsyncDalamudPlugin
 
         CommandManager.AddHandler(CommandName, new CommandInfo(OnCommand)
         {
-            HelpMessage = "Affiche la fiche de butin de la mission sélectionnée ou en cours. « config » pour les paramètres.",
+            HelpMessage = Strings.CommandHelp,
         });
         CommandManager.AddHandler(ShortCommandName, new CommandInfo(OnCommand) { ShowInHelp = false });
 
         PluginInterface.UiBuilder.Draw += windowSystem.Draw;
         PluginInterface.UiBuilder.OpenMainUi += ToggleLootWindow;
         PluginInterface.UiBuilder.OpenConfigUi += ToggleSettings;
+        PluginInterface.LanguageChanged += OnLanguageChanged;
     }
 
     public async ValueTask DisposeAsync()
     {
+        PluginInterface.LanguageChanged -= OnLanguageChanged;
         PluginInterface.UiBuilder.Draw -= windowSystem.Draw;
         PluginInterface.UiBuilder.OpenMainUi -= ToggleLootWindow;
         PluginInterface.UiBuilder.OpenConfigUi -= ToggleSettings;
@@ -128,6 +132,16 @@ public sealed class Plugin : IAsyncDalamudPlugin
             return;
         autoOpened = false;
         lootWindow.Toggle();
+    }
+
+    private void OnLanguageChanged(string languageCode)
+    {
+        Strings.SetLanguage(languageCode);
+        Framework.RunOnFrameworkThread(() =>
+        {
+            UpdateServerInfoEntry();
+            lootWindow?.QueueRefresh();
+        });
     }
 
     private void OnSettingsChanged()
@@ -203,10 +217,8 @@ public sealed class Plugin : IAsyncDalamudPlugin
         }
 
         var (obtained, total) = ownership.GetRareProgress(duty);
-        dtrEntry.Text = total > 0 ? $"Butin {obtained}/{total}" : "Butin";
-        dtrEntry.Tooltip = $"LootFinderXIV : {duty.Name}\n"
-            + (total > 0 ? $"Récompenses rares obtenues : {obtained}/{total}\n" : string.Empty)
-            + "Cliquer pour afficher la fiche.";
+        dtrEntry.Text = Strings.ServerInfoText(obtained, total);
+        dtrEntry.Tooltip = Strings.ServerInfoTooltip(duty, obtained, total);
         dtrEntry.Shown = true;
     }
 }

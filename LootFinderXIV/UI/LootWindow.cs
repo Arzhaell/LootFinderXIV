@@ -7,6 +7,7 @@ using FFXIVClientStructs.FFXIV.Component.GUI;
 using KamiToolKit.BaseTypes;
 using KamiToolKit.Nodes;
 using LootFinderXIV.Data;
+using LootFinderXIV.Localization;
 using LootFinderXIV.Services;
 using ContextMenu = KamiToolKit.ContextMenu.ContextMenu;
 
@@ -74,7 +75,7 @@ public sealed class LootWindow : NativeAddon
         {
             Position = ContentStartPosition + new Vector2(ContentSize.X - 185.0f, 0.0f),
             Size = new Vector2(185.0f, HeaderHeight),
-            String = "Masquer les obtenus",
+            String = Strings.HideObtained,
             IsChecked = Config.HideObtained,
             OnClick = isChecked =>
             {
@@ -125,31 +126,36 @@ public sealed class LootWindow : NativeAddon
 
     private void Rebuild()
     {
-        if (body is null || infoNode is null || emptyNode is null)
+        if (body is null || infoNode is null || emptyNode is null || hideObtainedNode is null)
             return;
+
+        // La langue peut avoir changé depuis l'ouverture.
+        hideObtainedNode.String = Strings.HideObtained;
+        hideObtainedNode.IsChecked = Config.HideObtained;
 
         var list = body.ContentNode;
         list.Clear();
 
         if (Watcher.ActiveDuty is not { } duty)
         {
+            shownDutyId = 0;
             WindowNode?.SetTitle(DefaultTitle);
             infoNode.String = string.Empty;
-            emptyNode.String = "Sélectionnez une mission dans l'outil de mission,\nou entrez dans une mission, pour voir son butin.";
+            emptyNode.String = Strings.NoDutySelected;
             emptyNode.IsVisible = true;
             body.RecalculateSizes();
             return;
         }
 
         emptyNode.IsVisible = false;
+        WindowNode?.SetTitle(duty.Name, DefaultTitle);
         if (duty.ContentFinderConditionId != shownDutyId)
         {
             shownDutyId = duty.ContentFinderConditionId;
-            WindowNode?.SetTitle(duty.Name, DefaultTitle);
             body.ScrollToStart();
         }
 
-        infoNode.String = $"{duty.ContentTypeName} · Niv. {duty.Level}" + (duty.ItemLevel > 0 ? $" · iLvl {duty.ItemLevel}" : string.Empty);
+        infoNode.String = Strings.DutyInfo(duty);
 
         list.AddNode(BuildRareSection(duty));
         if (BuildRewardSection(duty) is { } rewards)
@@ -196,10 +202,10 @@ public sealed class LootWindow : NativeAddon
     {
         var (obtained, total) = Ownership.GetRareProgress(duty);
         var title = total == 0
-            ? "Récompenses rares : aucune"
+            ? Strings.RareSectionNone
             : obtained == total
-                ? $"Récompenses rares : tout obtenu ({obtained}/{total})"
-                : $"Récompenses rares : {obtained}/{total}";
+                ? Strings.RareSectionComplete(obtained, total)
+                : Strings.RareSection(obtained, total);
         var section = CreateSection("rare", title);
 
         foreach (var rare in duty.RareItems)
@@ -207,13 +213,13 @@ public sealed class LootWindow : NativeAddon
             var state = Ownership.GetState(rare.Item);
             if (Config.HideObtained && state.Obtained)
                 continue;
-            var row = CreateItemRow(rare.Item, state, CategoryLabel(rare.Item.Category));
-            row.TextTooltip = "Où l'obtenir :\n" + string.Join("\n", rare.Sources);
+            var row = CreateItemRow(rare.Item, state, Strings.Category(rare.Item.Category));
+            row.TextTooltip = Strings.WhereToGet + "\n" + string.Join("\n", rare.Sources.Select(Strings.Source));
             section.AddNode(row);
         }
 
         if (total == 0)
-            section.AddNode(CreateNoteRow("Pas de mascotte, monture ni rouleau d'orchestrion ici."));
+            section.AddNode(CreateNoteRow(Strings.NoRareHere));
         return section;
     }
 
@@ -222,12 +228,13 @@ public sealed class LootWindow : NativeAddon
         if (duty.Tomestones.Count == 0 && duty.ClearGil == 0)
             return null;
 
-        var section = CreateSection("rewards", "Mémoquartz et gils");
+        var section = CreateSection("rewards", Strings.RewardsSection);
         foreach (var reward in duty.Tomestones)
         {
-            var tooltip = string.Join("\n", reward.Amounts.Select(a => $"{a.Source} : {a.Amount}"));
+            var tooltip = string.Join("\n", reward.Amounts.Select(a =>
+                Strings.AmountLine(a.IsFinal ? Strings.FinalBoss(a.Boss) : Strings.BossName(a.Boss), a.Amount)));
             if (reward.NewPlayerBonus > 0)
-                tooltip += $"\nBonus si un joueur découvre la mission : +{reward.NewPlayerBonus}";
+                tooltip += "\n" + Strings.NewPlayerBonus(reward.NewPlayerBonus);
 
             section.AddNode(new LootRowNode
             {
@@ -235,7 +242,7 @@ public sealed class LootWindow : NativeAddon
                 TooltipItemId = reward.Tomestone.ItemId,
                 Name = reward.Tomestone.Name,
                 Detail = reward.Amounts.Count > 1 ? string.Join(" + ", reward.Amounts.Select(a => a.Amount)) : string.Empty,
-                Status = $"×{reward.Total}",
+                Status = Strings.Amount(reward.Total),
                 StatusColor = LootRowNode.DefaultTextColor,
                 TextTooltip = tooltip,
             });
@@ -246,8 +253,8 @@ public sealed class LootWindow : NativeAddon
             section.AddNode(new LootRowNode
             {
                 IconId = GilIcon,
-                Name = "Gils en fin de mission",
-                Status = $"×{duty.ClearGil:N0}",
+                Name = Strings.ClearGil,
+                Status = Strings.Amount(duty.ClearGil),
                 StatusColor = LootRowNode.DefaultTextColor,
             });
         }
@@ -258,11 +265,7 @@ public sealed class LootWindow : NativeAddon
     {
         var states = chest.Entries.Select(e => (Entry: e, State: Ownership.GetState(e.Item))).ToList();
         var obtained = states.Count(s => s.State.Obtained);
-
-        var title = chest.MapCoordinates is { } coords
-            ? $"{chest.Title}  (X {coords.X:0.0} · Y {coords.Y:0.0})"
-            : chest.Title;
-        var section = CreateSection(chest.Title, $"{title}   {obtained}/{states.Count}");
+        var section = CreateSection(chest.Key, Strings.ChestHeader(chest, obtained, states.Count));
 
         var shown = 0;
         foreach (var (entry, state) in states)
@@ -270,8 +273,8 @@ public sealed class LootWindow : NativeAddon
             if (Config.HideObtained && state.Obtained)
                 continue;
             var detail = entry.Probability is { } p
-                ? $"{p:0.#} %"
-                : entry.Item.IsEquipment ? $"iLvl {entry.Item.ItemLevel}" : CategoryLabel(entry.Item.Category);
+                ? Strings.Percent(p)
+                : entry.Item.IsEquipment ? Strings.ItemLevel(entry.Item.ItemLevel) : Strings.Category(entry.Item.Category);
             section.AddNode(CreateItemRow(entry.Item, state, detail));
             shown++;
         }
@@ -280,7 +283,7 @@ public sealed class LootWindow : NativeAddon
         {
             if (!Config.HideObtained)
                 return null;
-            section.AddNode(CreateNoteRow("Tout est obtenu dans ce coffre."));
+            section.AddNode(CreateNoteRow(Strings.ChestAllObtained));
         }
         return section;
     }
@@ -294,7 +297,7 @@ public sealed class LootWindow : NativeAddon
             Name = item.Name,
             NameColor = RarityColor(item.Rarity),
             Detail = detail,
-            Status = StatusLabel(state),
+            Status = Strings.Status(state),
             StatusColor = state.Obtained ? ObtainedColor : MissingColor,
         };
         row.OnRightClick = () => OpenItemMenu(item, state);
@@ -310,47 +313,23 @@ public sealed class LootWindow : NativeAddon
     private unsafe void OpenItemMenu(LootItem item, LootItemState state)
     {
         contextMenu.Clear();
-        contextMenu.AddItem("Lien dans le chat", () => AgentChatLog.Instance()->LinkItem(item.ItemId));
+        contextMenu.AddItem(Strings.LinkInChat, () => AgentChatLog.Instance()->LinkItem(item.ItemId));
         if (item.IsEquipment)
-            contextMenu.AddItem("Essayer", () => AgentTryon.TryOn(0, item.ItemId));
+            contextMenu.AddItem(Strings.TryOn, () => AgentTryon.TryOn(0, item.ItemId));
 
         // Statut forcé à la main, pour ce que le jeu ne permet pas de détecter (équipement revendu...).
         if (!state.IsUnlockable && state.Source != ObtainedSource.NotLoggedIn)
         {
             if (state.Obtained)
-                contextMenu.AddItem("Marquer comme non obtenu", () => Ownership.SetManual(item, false));
+                contextMenu.AddItem(Strings.MarkNotObtained, () => Ownership.SetManual(item, false));
             else
-                contextMenu.AddItem("Marquer comme obtenu", () => Ownership.SetManual(item, true));
+                contextMenu.AddItem(Strings.MarkObtained, () => Ownership.SetManual(item, true));
             if (state.Source == ObtainedSource.Manual)
-                contextMenu.AddItem("Revenir à la détection automatique", () => Ownership.SetManual(item, null));
+                contextMenu.AddItem(Strings.AutomaticDetection, () => Ownership.SetManual(item, null));
         }
 
         contextMenu.Open();
     }
-
-    private static string StatusLabel(LootItemState state) => state switch
-    {
-        { Source: ObtainedSource.NotLoggedIn } => string.Empty,
-        { Obtained: false } => "Manquant",
-        { Source: ObtainedSource.Unlocked } => "Débloqué",
-        { Source: ObtainedSource.Cabinet } => "Armoire",
-        { Source: ObtainedSource.Held } => "Possédé",
-        _ => "Obtenu",
-    };
-
-    private static string CategoryLabel(LootCategory category) => category switch
-    {
-        LootCategory.Minion => "Mascotte",
-        LootCategory.Mount => "Monture",
-        LootCategory.Orchestrion => "Orchestrion",
-        LootCategory.TripleTriadCard => "Carte TT",
-        LootCategory.Barding => "Barde",
-        LootCategory.FashionAccessory => "Accessoire",
-        LootCategory.Glasses => "Lunettes",
-        LootCategory.OtherUnlock => "Déblocage",
-        LootCategory.Equipment => "Équipement",
-        _ => "Divers",
-    };
 
     private static Vector4 RarityColor(byte rarity) => rarity switch
     {
