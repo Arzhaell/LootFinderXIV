@@ -1,0 +1,17 @@
+<Project Sdk="Dalamud.NET.Sdk/15.0.0">
+  <PropertyGroup>
+    <Version>0.2.0.0</Version>
+    <Description>Affiche tout le loot possible d'une mission et ce qu'il vous manque.</Description>
+    <IsPackable>false</IsPackable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Nullable>enable</Nullable>
+    <LangVersion>preview</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Tables de loot des donjons (coffres de boss, coffres au trésor...), GPL-3.0 -->
+    <PackageReference Include="LuminaSupplemental.Excel" Version="5.1.5" />
+    <!-- Interface native (fenêtres au style du jeu), MIT, sous-module figé sur le commit 6b7b191. -->
+    <ProjectReference Include="..\KamiToolKit\KamiToolKit.csproj" />
+  </ItemGroup>
+</Project>

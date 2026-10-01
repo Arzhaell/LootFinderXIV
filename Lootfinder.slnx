@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="KamiToolKit/KamiToolKit.csproj">
+    <Platform Project="x64" />
+  </Project>
+  <Project Path="Lootfinder/Lootfinder.csproj" />
+</Solution>
