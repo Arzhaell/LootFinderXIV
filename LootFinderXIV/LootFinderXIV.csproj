@@ -1,7 +1,7 @@
 <Project Sdk="Dalamud.NET.Sdk/15.0.0">
   <PropertyGroup>
-    <Version>0.2.0.0</Version>
-    <Description>Affiche tout le loot possible d'une mission et ce qu'il vous manque.</Description>
+    <Version>1.0.0.0</Version>
+    <Description>Loot sheet of every duty: rare rewards, tomestones and coffers.</Description>
     <IsPackable>false</IsPackable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
