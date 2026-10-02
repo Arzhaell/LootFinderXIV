@@ -72,6 +72,8 @@ public static class Strings
     public static string Progress(int obtained, int total) => total == 0 ? "—" : $"{obtained}/{total}";
     public static string OverviewSection(string contentType, int obtained, int total) => $"{contentType}   {Progress(obtained, total)}";
     public static string OpenSheetTooltip => T("Cliquer pour afficher la fiche.", "Click to show the loot sheet.");
+    public static string SearchPlaceholder => T("Rechercher une mission…", "Search for a duty…");
+    public static string NoDutyFound => T("Aucune mission trouvée.", "No duty found.");
 
     // Coffres et sources
 

@@ -37,6 +37,13 @@ public sealed class LootDatabase
     // ContentFinderCondition.ContentLinkType pour une InstanceContent.
     private const byte ContentLinkInstance = 1;
 
+    // Raids en alliance : type de contenu « Raids » avec le format de groupe à 24 joueurs (ContentMemberType 4).
+    private const uint ContentTypeRaid = 5;
+    private const uint AllianceMemberType = 4;
+
+    // Mission aléatoire « raids en alliance », dont la catégorie donne le nom traduit par le jeu.
+    private const uint AllianceRaidRoulette = 15;
+
     public IReadOnlyList<DutySheet> Duties { get; }
     public IReadOnlyDictionary<uint, DutySheet> ByContentFinderCondition { get; }
 
@@ -68,6 +75,7 @@ public sealed class LootDatabase
         var bnpcNames = data.Excel.GetSheet<BNpcName>();
         var maps = data.Excel.GetSheet<Map>();
         var instanceContents = data.Excel.GetSheet<InstanceContent>();
+        var allianceRaidsName = data.Excel.GetSheet<ContentRoulette>().GetRowOrDefault(AllianceRaidRoulette)?.Category.ExtractText();
 
         var items = new Dictionary<uint, LootItem>();
         LootItem? GetItem(uint itemId)
@@ -123,14 +131,18 @@ public sealed class LootDatabase
                 ? instanceContents.GetRowOrDefault(cfc.Content.RowId)
                 : null;
 
+            var typeName = cfc.ContentType.ValueNullable?.Name.ExtractText() is { Length: > 0 } name ? Capitalize(name) : "?";
+            var isAllianceRaid = cfc.ContentType.RowId == ContentTypeRaid && cfc.ContentMemberType.RowId == AllianceMemberType;
+            if (isAllianceRaid && !string.IsNullOrWhiteSpace(allianceRaidsName))
+                typeName = Capitalize(allianceRaidsName);
+
             var duty = new DutySheet
             {
                 ContentFinderConditionId = cfcId,
                 Name = Capitalize(dutyName),
                 ContentTypeId = cfc.ContentType.RowId,
-                ContentTypeName = cfc.ContentType.ValueNullable?.Name.ExtractText() is { Length: > 0 } typeName
-                    ? Capitalize(typeName)
-                    : "?",
+                ContentTypeName = typeName,
+                GroupKey = cfc.ContentType.RowId * 10 + (isAllianceRaid ? 1u : 0u),
                 Level = cfc.ClassJobLevelRequired,
                 ItemLevel = cfc.ItemLevelRequired,
                 Icon = cfc.ContentType.ValueNullable?.Icon ?? 0,

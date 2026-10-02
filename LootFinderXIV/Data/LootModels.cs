@@ -124,6 +124,9 @@ public sealed class DutySheet
     /// <summary>Icône du type de mission (donjon, défi, raid...).</summary>
     public uint Icon { get; init; }
 
+    /// <summary>Groupe dans la liste des missions : le type de contenu, les raids en alliance à part (juste après les raids).</summary>
+    public uint GroupKey { get; init; }
+
     /// <summary>Coffres de boss dans l'ordre des combats, puis coffres au trésor, puis autres objets.</summary>
     public List<LootChest> Chests { get; } = [];
 

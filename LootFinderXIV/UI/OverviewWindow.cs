@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Numerics;
 using FFXIVClientStructs.FFXIV.Component.GUI;
@@ -20,6 +21,7 @@ public sealed class OverviewWindow : NativeAddon
     public static readonly Vector2 DefaultSize = new(420.0f, 640.0f);
 
     private const float HeaderHeight = 24.0f;
+    private const float SearchHeight = 28.0f;
 
     private static readonly Vector4 CompleteColor = new(0.55f, 0.95f, 0.55f, 1.0f);
 
@@ -28,6 +30,9 @@ public sealed class OverviewWindow : NativeAddon
     private readonly List<(string TypeName, List<DutySheet> Duties, CollapsingHeaderNode Header)> sections = [];
 
     private TextNode? totalNode;
+    private SearchInputNode? searchNode;
+    private TextNode? emptyNode;
+    private string search = string.Empty;
     private CheckboxNode? hideCompletedNode;
     private ScrollingNode<VerticalListNode>? body;
     private bool refreshQueued;
@@ -91,10 +96,26 @@ public sealed class OverviewWindow : NativeAddon
         };
         hideCompletedNode.AttachNode(this);
 
-        body = new ScrollingNode<VerticalListNode>
+        // Recherche par nom : la liste se filtre à chaque lettre tapée.
+        searchNode = new SearchInputNode
         {
             Position = ContentStartPosition + new Vector2(0.0f, HeaderHeight + 4.0f),
-            Size = ContentSize - new Vector2(0.0f, HeaderHeight + 4.0f),
+            Size = new Vector2(ContentSize.X, SearchHeight),
+            PlaceholderString = Strings.SearchPlaceholder,
+            String = search,
+            OnInputReceived = text =>
+            {
+                search = text.ToString().Trim();
+                QueueRefresh(rebuild: true);
+            },
+        };
+        searchNode.AttachNode(this);
+
+        var bodyTop = HeaderHeight + 4.0f + SearchHeight + 6.0f;
+        body = new ScrollingNode<VerticalListNode>
+        {
+            Position = ContentStartPosition + new Vector2(0.0f, bodyTop),
+            Size = ContentSize - new Vector2(0.0f, bodyTop),
             AutoHideScrollBar = true,
             ScrollSpeed = 40,
         };
@@ -102,6 +123,17 @@ public sealed class OverviewWindow : NativeAddon
         body.ContentNode.FitContents = true;
         body.ContentNode.ItemSpacing = 6.0f;
         body.AttachNode(this);
+
+        emptyNode = new TextNode
+        {
+            Position = body.Position + new Vector2(0.0f, 20.0f),
+            Size = new Vector2(ContentSize.X, 40.0f),
+            AlignmentType = AlignmentType.Center,
+            FontSize = 14,
+            TextColor = LootRowNode.DimTextColor,
+            IsVisible = false,
+        };
+        emptyNode.AttachNode(this);
 
         Rebuild();
     }
@@ -113,26 +145,31 @@ public sealed class OverviewWindow : NativeAddon
         sections.Clear();
         totalNode = null;
         hideCompletedNode = null;
+        searchNode = null;
         body = null;
+        emptyNode = null;
     }
 
     private void Rebuild()
     {
-        if (body is null || hideCompletedNode is null)
+        if (body is null || hideCompletedNode is null || searchNode is null || emptyNode is null)
             return;
 
+        // La langue peut avoir changé depuis l'ouverture.
         WindowNode?.SetTitle(Strings.OverviewTitle, LootWindow.DefaultTitle);
         hideCompletedNode.String = Strings.HideCompletedDuties;
         hideCompletedNode.IsChecked = Config.HideCompletedDuties;
+        searchNode.PlaceholderString = Strings.SearchPlaceholder;
 
         var list = body.ContentNode;
         list.Clear();
         rows.Clear();
         sections.Clear();
 
+        var searching = search.Length > 0;
         var progress = Database.Duties.ToDictionary(d => d.ContentFinderConditionId, Ownership.GetRareProgress);
         var groups = Database.Duties
-            .GroupBy(d => d.ContentTypeId)
+            .GroupBy(d => d.GroupKey)
             .OrderBy(g => g.Key);
 
         foreach (var group in groups)
@@ -142,13 +179,14 @@ public sealed class OverviewWindow : NativeAddon
                 .ThenBy(d => d.ItemLevel)
                 .ThenBy(d => d.ContentFinderConditionId) // ordre du jeu (étages des donjons sans fond...)
                 .ToList();
-            var visible = Config.HideCompletedDuties
-                ? duties.Where(d => !IsComplete(progress[d.ContentFinderConditionId])).ToList()
-                : duties;
+            var visible = duties
+                .Where(d => !Config.HideCompletedDuties || !IsComplete(progress[d.ContentFinderConditionId]))
+                .Where(d => MatchesSearch(d.Name))
+                .ToList();
             if (visible.Count == 0)
                 continue;
 
-            var typeId = group.Key;
+            var groupKey = group.Key;
             var typeName = duties[0].ContentTypeName;
             var header = new CollapsingHeaderNode
             {
@@ -156,14 +194,15 @@ public sealed class OverviewWindow : NativeAddon
                 FitWidth = true,
                 ItemSpacing = 2.0f,
                 FirstItemSpacing = 2.0f,
-                IsCollapsed = collapsedTypes.Contains(typeId),
+                // Pendant une recherche, tous les groupes sont dépliés pour voir les résultats.
+                IsCollapsed = !searching && collapsedTypes.Contains(groupKey),
             };
             header.OnToggle = expanded =>
             {
                 if (expanded)
-                    collapsedTypes.Remove(typeId);
+                    collapsedTypes.Remove(groupKey);
                 else
-                    collapsedTypes.Add(typeId);
+                    collapsedTypes.Add(groupKey);
                 Relayout();
             };
 
@@ -186,9 +225,17 @@ public sealed class OverviewWindow : NativeAddon
             sections.Add((typeName, duties, header));
         }
 
+        emptyNode.String = Strings.NoDutyFound;
+        emptyNode.IsVisible = sections.Count == 0;
+
         UpdateTotal(progress);
         Relayout();
     }
+
+    /// <summary>Recherche sans tenir compte des majuscules ni des accents (« pere » trouve « Père »).</summary>
+    private bool MatchesSearch(string name) =>
+        search.Length == 0
+        || CultureInfo.InvariantCulture.CompareInfo.IndexOf(name, search, CompareOptions.IgnoreCase | CompareOptions.IgnoreNonSpace) >= 0;
 
     /// <summary>Met à jour les compteurs sans recréer les lignes.</summary>
     private void RefreshCounts()
