@@ -13,7 +13,8 @@ public sealed unsafe class LootRowNode : SimpleComponentNode
 {
     public const float RowHeight = 30.0f;
     private const float IconSize = 26.0f;
-    private const float DetailWidth = 70.0f;
+    private const float DetailMinWidth = 70.0f;
+    private const float DetailMaxRatio = 0.45f; // part maximale de la ligne pour le détail
     private const float StatusWidth = 72.0f;
 
     public static readonly Vector4 DefaultTextColor = new(1.0f, 1.0f, 1.0f, 1.0f);
@@ -29,11 +30,13 @@ public sealed unsafe class LootRowNode : SimpleComponentNode
         iconNode = new IconImageNode { FitTexture = true };
         iconNode.AttachNode(this);
 
+        // Noms et détails trop longs : coupés avec « … » au lieu de déborder sur la colonne voisine.
         nameNode = new TextNode
         {
             AlignmentType = AlignmentType.Left,
             FontSize = 14,
             TextColor = DefaultTextColor,
+            TextFlags = TextFlags.Ellipsis,
         };
         nameNode.AttachNode(this);
 
@@ -42,6 +45,7 @@ public sealed unsafe class LootRowNode : SimpleComponentNode
             AlignmentType = AlignmentType.Right,
             FontSize = 12,
             TextColor = DimTextColor,
+            TextFlags = TextFlags.Ellipsis,
         };
         detailNode.AttachNode(this);
 
@@ -93,7 +97,12 @@ public sealed unsafe class LootRowNode : SimpleComponentNode
 
     public string Detail
     {
-        set => detailNode.String = value;
+        set
+        {
+            detailNode.String = value;
+            if (Width > 0)
+                OnSizeChanged(); // la largeur de la colonne dépend du texte
+        }
     }
 
     public string Status
@@ -118,8 +127,10 @@ public sealed unsafe class LootRowNode : SimpleComponentNode
         statusNode.Size = new Vector2(StatusWidth, Height);
         statusNode.Position = new Vector2(Width - StatusWidth - 4.0f, 0.0f);
 
-        detailNode.Size = new Vector2(DetailWidth, Height);
-        detailNode.Position = new Vector2(statusNode.X - DetailWidth - 4.0f, 0.0f);
+        // Colonne du détail : au moins 70 px, élargie si son texte est plus long (ex. « 15 + 25 + 35 + 45 »).
+        var detailWidth = Math.Clamp(detailNode.GetTextDrawSize(false).X + 4.0f, DetailMinWidth, Math.Max(DetailMinWidth, Width * DetailMaxRatio));
+        detailNode.Size = new Vector2(detailWidth, Height);
+        detailNode.Position = new Vector2(statusNode.X - detailWidth - 4.0f, 0.0f);
 
         nameNode.Size = new Vector2(Math.Max(0.0f, detailNode.X - textX - 4.0f), Height);
         nameNode.Position = new Vector2(textX, 0.0f);
