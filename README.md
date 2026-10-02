@@ -35,7 +35,8 @@ The sheet is a native, game-styled window (library [KamiToolKit](https://github.
   the list of all duties.
 - **`/lootfinder sheet`**: open / close the sheet of the selected or current duty. **`/lootfinder config`**: settings.
 
-The interface is in English or French, following the language set in Dalamud's settings.
+The interface is in English or French, following the language set in Dalamud's settings; it can also be forced in
+the plugin settings.
 
 In the sheet: hover an icon for the game's item tooltip; right-click an item to link it in chat, try it on, or
 force its "obtained" status. Tick "Hide obtained" to keep only what you still need.

@@ -36,7 +36,8 @@ La fiche est une fenêtre native, au style du jeu (bibliothèque [KamiToolKit](h
 - **`/lootfinder fiche`** : ouvre / ferme la fiche de la mission sélectionnée ou en cours. **`/lootfinder config`** :
   paramètres.
 
-L'interface est en français ou en anglais, selon la langue choisie dans les réglages de Dalamud.
+L'interface est en français ou en anglais, selon la langue choisie dans les réglages de Dalamud ; on peut aussi la
+forcer dans les paramètres du plugin.
 
 Dans la fiche : survol de l'icône = infobulle du jeu ; clic droit sur un objet = lien dans le chat, essayer,
 forcer le statut « obtenu ». Case « Masquer les obtenus » pour ne garder que ce qu'il reste à obtenir.

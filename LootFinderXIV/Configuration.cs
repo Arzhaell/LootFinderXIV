@@ -15,6 +15,9 @@ public sealed class Configuration : IPluginConfiguration
     /// <summary>Affiche l'entrée « Butin » dans la barre d'infos serveur.</summary>
     public bool ShowServerInfoEntry = true;
 
+    /// <summary>Langue de l'interface : « auto » (celle de Dalamud), « fr » ou « en ».</summary>
+    public string Language = "auto";
+
     public bool HideObtained = false;
 
     /// <summary>Liste des missions : masque celles dont tous les loots rares sont obtenus.</summary>

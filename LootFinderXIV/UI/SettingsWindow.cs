@@ -27,9 +27,32 @@ public sealed class SettingsWindow : Window
         changed |= ImGui.Checkbox(Strings.SettingServerInfoEntry, ref config.ShowServerInfoEntry);
         changed |= ImGui.Checkbox(Strings.SettingHideObtained, ref config.HideObtained);
 
+        ImGui.Spacing();
+        ImGui.SetNextItemWidth(250.0f * ImGui.GetIO().FontGlobalScale);
+        if (ImGui.BeginCombo(Strings.SettingLanguage, LanguageLabel(config.Language)))
+        {
+            foreach (var code in new[] { "auto", "fr", "en" })
+            {
+                if (ImGui.Selectable(LanguageLabel(code), config.Language == code) && config.Language != code)
+                {
+                    config.Language = code;
+                    changed = true;
+                }
+            }
+            ImGui.EndCombo();
+        }
+
         if (!changed)
             return;
         config.Save();
         onChanged();
     }
+
+    // Les noms des langues restent dans leur propre langue, pour qu'on s'y retrouve quelle que soit l'interface.
+    private static string LanguageLabel(string code) => code switch
+    {
+        "fr" => "Français",
+        "en" => "English",
+        _ => Strings.LanguageAuto,
+    };
 }

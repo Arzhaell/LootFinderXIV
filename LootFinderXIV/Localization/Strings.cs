@@ -14,10 +14,14 @@ public static class Strings
 
     public static CultureInfo Culture { get; private set; } = CultureInfo.GetCultureInfo("en-US");
 
-    /// <summary>Code de langue de Dalamud (« fr », « en », « de », « ja »...) ; tout sauf « fr » donne l'anglais.</summary>
-    public static void SetLanguage(string languageCode)
+    /// <summary>
+    /// Choisit la langue : celle forcée dans les paramètres (« fr » ou « en »), sinon celle de Dalamud
+    /// (« fr », « en », « de », « ja »...) ; tout sauf le français donne l'anglais.
+    /// </summary>
+    public static void SetLanguage(string dalamudLanguage, string setting)
     {
-        french = languageCode == "fr";
+        var code = setting is "fr" or "en" ? setting : dalamudLanguage;
+        french = code == "fr";
         Culture = CultureInfo.GetCultureInfo(french ? "fr-FR" : "en-US");
     }
 
@@ -129,6 +133,8 @@ public static class Strings
     public static string SettingOpenWithDutyFinder => T("Ouvrir la fiche avec l'outil de mission", "Open the sheet with the Duty Finder");
     public static string SettingServerInfoEntry => T("Afficher « Butin » dans la barre d'infos serveur", "Show \"Loot\" in the server info bar");
     public static string SettingHideObtained => T("Masquer les objets déjà obtenus", "Hide items already obtained");
+    public static string SettingLanguage => T("Langue", "Language");
+    public static string LanguageAuto => T("Automatique (langue de Dalamud)", "Automatic (Dalamud's language)");
 
     public static string CommandHelp => T(
         "Affiche la liste de toutes les missions. « fiche » : fiche de la mission sélectionnée ou en cours ; « config » : paramètres.",

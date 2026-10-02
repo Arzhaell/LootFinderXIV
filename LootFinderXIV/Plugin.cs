@@ -48,7 +48,7 @@ public sealed class Plugin : IAsyncDalamudPlugin
     public async Task LoadAsync(CancellationToken cancellationToken)
     {
         config = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
-        Strings.SetLanguage(PluginInterface.UiLanguage);
+        Strings.SetLanguage(PluginInterface.UiLanguage, config.Language);
 
         await KamiToolKitLibrary.InitializeAsync(PluginInterface, "LootFinderXIV");
 
@@ -183,7 +183,7 @@ public sealed class Plugin : IAsyncDalamudPlugin
 
     private void OnLanguageChanged(string languageCode)
     {
-        Strings.SetLanguage(languageCode);
+        Strings.SetLanguage(languageCode, config.Language);
         Framework.RunOnFrameworkThread(() =>
         {
             UpdateServerInfoEntry();
@@ -194,6 +194,8 @@ public sealed class Plugin : IAsyncDalamudPlugin
 
     private void OnSettingsChanged()
     {
+        // La langue forcée a pu changer.
+        Strings.SetLanguage(PluginInterface.UiLanguage, config.Language);
         UpdateServerInfoEntry();
         lootWindow?.QueueRefresh();
         overviewWindow?.QueueRefresh(rebuild: true);
